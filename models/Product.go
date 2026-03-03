@@ -5,6 +5,7 @@ type Product struct {
 	Name      string
 	Price     float64
 	Stock     int
- isActive  bool
- createdAt time.Time
+ IsActive  bool
+ CreatedAt time.Time
+ Image     []byte
 }

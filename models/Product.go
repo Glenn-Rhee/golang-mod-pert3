@@ -1,8 +1,10 @@
 package models
 
 type Product struct {
-	Id    string
-	Name  string
-	Price float64
-	Stock int
+	Id        string
+	Name      string
+	Price     float64
+	Stock     int
+ isActive  bool
+ createdAt time.Time
 }

@@ -3,6 +3,6 @@ package models
 type Product struct {
 	Id    string
 	Name  string
-	Price int
+	Price float64
 	Stock int
 }

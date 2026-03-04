@@ -69,12 +69,14 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request){
 
 	id := r.FormValue("id")
 	name := r.FormValue("name")
+	// Mengecek apakah field price merupakan angka
 	price, err := strconv.ParseInt(r.FormValue("price"), 10, 64)
 	if err != nil {
 		errMsg := url.QueryEscape("Price must be a number")
 		http.Redirect(w, r, "/?error=" + errMsg, http.StatusSeeOther)
 		return
 	}
+	// Mengecek apakah field stock merupakan angka
 	stock, err := strconv.ParseInt(r.FormValue("stock"), 10, 64)
 	if err != nil {
 		errMsg := url.QueryEscape("Stock must be a number")
@@ -82,6 +84,7 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
+	// Mengecek apakah image ada
 	file, _, err := r.FormFile("image")
 	if err != nil {
 		http.Redirect(w, r, "/?error=Failed read file", http.StatusBadRequest)
@@ -90,17 +93,20 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request){
 	
 	defer file.Close()
 
+	// Membaca file gambar, apabila ada error mengembalikan response
 	fileBytes, err := io.ReadAll(file)
 	if err != nil {
 		http.Redirect(w, r, "/?error=Failed read fil", http.StatusInternalServerError)
 		return
 	}
 
+	// Mengecek apakah ukuran gambar itu lebih kecil dari 1mb
 	if len(fileBytes) > 1<<20 {
 		http.Redirect(w, r, "?error=File size more than 1MB", http.StatusBadRequest)
 		return
 	}
 
+	// Mengecek tipe file apakah jpeg atau png, jika bukan akan mengembalikan error
 	fileType := http.DetectContentType(fileBytes)
 	if fileType != "image/jpeg" && fileType != "image/png" {
 		http.Redirect(w, r, "?error=JPEG or PNG type only", http.StatusBadRequest)

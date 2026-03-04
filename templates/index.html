@@ -205,6 +205,9 @@
             <th>Name</th>
             <th>Price</th>
             <th>Stock</th>
+            <th>Status</th>
+            <th>Time</th>
+            <th>Image</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -216,7 +219,15 @@
             <td>{{.Name}}</td>
             <td>{{.Price}}</td>
             <td>{{.Stock}}</td>
-
+            <td>{{if .IsActive}}Active{{else}}Inactive{{end}}</td>
+            <td>{{.CreatedAt}}</td>
+            <td>
+              <img
+                src="/image?id={{ .Id }}"
+                alt="{{ .Name }} image file"
+                width="80"
+              />
+            </td>
             <td>
               <!-- UPDATE -->
               <form action="/edit" method="GET" style="display: inline">

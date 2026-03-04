@@ -28,7 +28,7 @@ type HomePageData struct {
 }
 
 type EditPageData struct {
-	Product models.Product
+	Product ProductView
 	Error string
 }
 
@@ -174,13 +174,15 @@ func EditProductHandler(w http.ResponseWriter, r *http.Request){
 	if id == ""{
 		http.Redirect(w, r, "?error=Id is required!", http.StatusSeeOther)
 	}
-	query := "SELECT id, name, price, stock FROM products WHERE id = ?"
+	query := "SELECT id, name, price, stock, is_active, created_at FROM products WHERE id = ?"
 	var product models.Product
 	err := db.DB.QueryRow(query, id).Scan( 
 		&product.Id,
   		&product.Name,
   		&product.Price,
   		&product.Stock,
+		&product.IsActive,
+		&product.CreatedAt,
 	)
 	var errorMsg string
 	
@@ -191,9 +193,18 @@ func EditProductHandler(w http.ResponseWriter, r *http.Request){
 			errorMsg = "Internal server error"
 		}
 	}
+	formattedDate := product.CreatedAt.Format("02 Jan 2006 15:04")
 
 	data := EditPageData {
-		Product: product,
+		Product: ProductView{
+			Id:        product.Id,
+			Name:      product.Name,
+			Price:     product.Price,
+			Stock:     product.Stock,
+			IsActive:  product.IsActive,
+			CreatedAt: formattedDate,
+
+		},
 		Error: errorMsg,
 	}
 
@@ -203,6 +214,13 @@ func EditProductHandler(w http.ResponseWriter, r *http.Request){
 func UpdateProduct(w http.ResponseWriter, r *http.Request){
 	if r.Method != http.MethodPost {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+	err := r.ParseMultipartForm(1 << 20)
+	if err != nil {
+		http.Redirect(w, r, "/?error=File is to large. Max 1MB", http.StatusBadRequest)
 		return
 	}
 
@@ -223,8 +241,56 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	query := "UPDATE products SET name=?, price=?, stock=? WHERE id=?"
-	_, err = db.DB.Exec(query, name, price, stock, id)
+	isActive := r.FormValue("is_active") == "on"
+	var imgFile []byte
+	file, _, err := r.FormFile("image")
+
+	if err == nil {
+		defer file.Close()
+
+		// Membaca file gambar, apabila ada error mengembalikan response
+		fileBytes, err := io.ReadAll(file)
+		if err != nil {
+			http.Redirect(w, r, "/?error=Failed read fil", http.StatusInternalServerError)
+			return
+		}
+
+		// Mengecek apakah ukuran gambar itu lebih kecil dari 1mb
+		if len(fileBytes) > 1<<20 {
+			http.Redirect(w, r, "?error=File size more than 1MB", http.StatusBadRequest)
+			return
+		}
+
+		// Mengecek tipe file apakah jpeg atau png, jika bukan akan mengembalikan error
+		fileType := http.DetectContentType(fileBytes)
+		if fileType != "image/jpeg" && fileType != "image/png" {
+			http.Redirect(w, r, "?error=JPEG or PNG type only", http.StatusBadRequest)
+			return
+		}
+
+		imgFile = fileBytes
+	}
+	
+	var query string
+
+	if imgFile != nil {
+		query = `
+			UPDATE products 
+			SET name=?, price=?, stock=?, is_active=?, image=? 
+			WHERE id=?`
+	} else {
+		query = `
+			UPDATE products 
+			SET name=?, price=?, stock=?, is_active=? 
+			WHERE id=?`
+	}
+	
+	if imgFile != nil {
+		_, err = db.DB.Exec(query, name, price, stock, isActive, imgFile, id)
+	} else {
+		_, err = db.DB.Exec(query, name, price, stock, isActive, id)
+	}
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -25,7 +25,7 @@
       }
 
       input {
-        width: 100%;
+        width: calc(100% - 2rem);
         padding: 10px;
         margin-top: 8px;
         margin-bottom: 15px;
@@ -66,6 +66,34 @@
         margin-bottom: 10px;
         text-align: center;
       }
+
+      .image-preview {
+        text-align: center;
+        margin-bottom: 15px;
+      }
+
+      .image-preview img {
+        max-width: 150px;
+        border-radius: 6px;
+        margin-top: 8px;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .checkbox-wrapper {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .checkbox-wrapper input {
+        width: auto;
+        margin-right: 8px;
+      }
+
+      .input-group {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+      }
     </style>
   </head>
 
@@ -85,38 +113,72 @@
       </div>
 
       {{else}}
-      <!-- FORM VIEW -->
-      <form action="/update" method="POST">
-        <label>ID</label>
-        <input type="text" name="id" value="{{.Product.Id}}" readonly />
+      <form action="/update" method="POST" enctype="multipart/form-data">
+        <div class="input-group">
+          <div>
+            <label>ID</label>
+            <input type="text" name="id" value="{{.Product.Id}}" readonly />
+          </div>
 
-        <label>Name</label>
-        <input type="text" name="name" value="{{.Product.Name}}" required />
+          <div>
+            <label>Name</label>
+            <input type="text" name="name" value="{{.Product.Name}}" required />
+          </div>
 
-        <label>Price</label>
-        <input
-          type="text"
-          inputmode="numeric"
-          name="price"
-          value="{{.Product.Price}}"
-          required
-        />
+          <div>
+            <label>Price</label>
+            <input
+              type="number"
+              inputmode="numeric"
+              name="price"
+              value="{{.Product.Price}}"
+              required
+            />
+          </div>
 
-        <label>Stock</label>
-        <input
-          type="text"
-          inputmode="numeric"
-          name="stock"
-          value="{{.Product.Stock}}"
-          required
-        />
+          <div>
+            <label>Stock</label>
+            <input
+              type="number"
+              inputmode="numeric"
+              name="stock"
+              value="{{.Product.Stock}}"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- IS ACTIVE -->
+        <label class="checkbox-wrapper">
+          <input
+            type="checkbox"
+            name="is_active"
+            {{if
+            .Product.IsActive}}checked{{end}}
+          />
+          Active Product
+        </label>
+
+        <!-- CREATED AT -->
+        <label>Created At</label>
+        <input type="text" value="{{.Product.CreatedAt}}" readonly disabled />
+
+        <!-- CURRENT IMAGE -->
+        <div class="image-preview">
+          <label>Current Image</label><br />
+          <img src="/image?id={{.Product.Id}}" />
+        </div>
+
+        <!-- UPLOAD NEW IMAGE -->
+        <label>Change Image (optional)</label>
+        <input type="file" name="image" accept="image/*" />
 
         <button type="submit">Update Product</button>
       </form>
-      {{end}}
       <div class="back">
         <a href="/">⬅ Back to Home</a>
       </div>
+      {{end}}
     </div>
   </body>
 </html>

@@ -254,6 +254,16 @@
       </table>
     </div>
     <script>
+      const fileInput = document.getElementById("image");
+      const fileName = document.getElementById("file-name");
+
+      fileInput.addEventListener("change", function () {
+        if (this.files.length > 0) {
+          fileName.textContent = this.files[0].name;
+        } else {
+          fileName.textContent = "No file chosen";
+        }
+      });
       function openModal() {
         document.getElementById("modal").style.display = "block";
       }

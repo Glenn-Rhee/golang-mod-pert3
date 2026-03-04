@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"html/template"
+	"io"
 	"net/http"
 	"net/url"
 	"pert3_npm/db"
@@ -57,6 +58,13 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+	err := r.ParseMultipartForm(1 << 20)
+	if err != nil {
+		http.Redirect(w, r, "/?error=File is to large. Max 1MB", http.StatusBadRequest)
+		return
+	}
+
 	r.ParseForm()
 
 	id := r.FormValue("id")
@@ -74,9 +82,36 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	query := "INSERT INTO products(id, name, price, stock) VALUES(?, ?, ?, ?)"
+	file, _, err := r.FormFile("image")
+	if err != nil {
+		http.Redirect(w, r, "/?error=Failed read file", http.StatusBadRequest)
+		return
+	}
+	
+	defer file.Close()
 
-	_, err = db.DB.Exec(query, id, name, price, stock)
+	fileBytes, err := io.ReadAll(file)
+	if err != nil {
+		http.Redirect(w, r, "/?error=Failed read fil", http.StatusInternalServerError)
+		return
+	}
+
+	if len(fileBytes) > 1<<20 {
+		http.Redirect(w, r, "?error=File size more than 1MB", http.StatusBadRequest)
+		return
+	}
+
+	fileType := http.DetectContentType(fileBytes)
+	if fileType != "image/jpeg" && fileType != "image/png" {
+		http.Redirect(w, r, "?error=JPEG or PNG type only", http.StatusBadRequest)
+		return
+	}
+
+	query := `
+		INSERT INTO products (id, name, price, stock, is_active, created_at, image)
+		VALUES (?, ?, ?, ?, ?, NOW(), ?)
+	`
+	_, err = db.DB.Exec(query, id, name, price, stock, true, fileBytes)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return

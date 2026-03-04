@@ -13,7 +13,7 @@ func ConnectDB(){
 	username := "root"
 	password := ""
 	server := "127.0.0.1:3306"
-	dbName := "product_modul"
+	dbName := "tokolepkom_npm"
 	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?parseTime=true",username, password, server, dbName)
 
 	db, err := sql.Open("mysql", dsn)
@@ -26,6 +26,6 @@ func ConnectDB(){
 		log.Fatal("Database not connected:", err)
 	}
 
-	log.Println("\nDatabse connected!")
+	log.Println("\nDatabase connected!")
 	DB = db
 }

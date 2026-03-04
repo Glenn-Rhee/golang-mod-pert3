@@ -13,8 +13,17 @@ import (
 
 var tmpl *template.Template
 
+type ProductView struct {
+	Id        string
+	Name      string
+	Price     float64
+	Stock     int
+	IsActive  bool
+	CreatedAt string
+}
+
 type HomePageData struct {
-	Products []models.Product
+	Products []ProductView
 	Error string
 }
 
@@ -26,22 +35,38 @@ type EditPageData struct {
 func HomeHandler(w http.ResponseWriter, r *http.Request){
 	tmpl, _ = template.ParseFiles("templates/index.html")
 	errorMsg := r.URL.Query().Get("error")
-	rows, err := db.DB.Query("SELECT id, name, price, stock FROM products")
+	rows, err := db.DB.Query("SELECT id, name, price, stock, is_active, created_at FROM products")
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 	defer rows.Close()
-	var products []models.Product
+	var products []ProductView
 	for rows.Next(){
 		var product models.Product
-		err := rows.Scan(&product.Id, &product.Name, &product.Price, &product.Stock)
+
+		err := rows.Scan(
+			&product.Id,
+			&product.Name,
+			&product.Price,
+			&product.Stock,
+			&product.IsActive,
+			&product.CreatedAt,
+		)		
 		if err !=nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
 
-		products = append(products, product)
+		formattedDate := product.CreatedAt.Format("02 Jan 2006 15:04")
+		products = append(products, ProductView{
+			Id:        product.Id,
+			Name:      product.Name,
+			Price:     product.Price,
+			Stock:     product.Stock,
+			IsActive:  product.IsActive,
+			CreatedAt: formattedDate,
+		})
 	}
 
 	data := HomePageData{

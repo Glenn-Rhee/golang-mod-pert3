@@ -13,6 +13,8 @@ func main(){
 	db.ConnectDB()
 	// Akses halaman home
 	http.HandleFunc("/", handlers.HomeHandler)
+	// Akses route untuk menampilkan gambar
+	http.HandleFunc("/image", handlers.ImageHandler)
 	// akses halaman edit
 	http.HandleFunc("/edit", handlers.EditProductHandler)
 	// update data

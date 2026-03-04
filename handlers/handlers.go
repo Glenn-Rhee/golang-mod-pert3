@@ -52,6 +52,23 @@ func HomeHandler(w http.ResponseWriter, r *http.Request){
 	tmpl.Execute(w, data)
 }
 
+func ImageHandler(w http.ResponseWriter, r *http.Request){
+	id := r.URL.Query().Get("id")
+
+	var image []byte
+
+	err := db.DB.QueryRow("SELECT image FROM products WHERE id = ?", id).Scan(&image)
+
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	contentType := http.DetectContentType(image)
+	w.Header().Set("Content-Type", contentType)
+	w.Write(image)
+}
+
 func CreateProductHandler(w http.ResponseWriter, r *http.Request){
 	if r.Method != http.MethodPost {
 		http.Redirect(w, r, "/", http.StatusSeeOther)

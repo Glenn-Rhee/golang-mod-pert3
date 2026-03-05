@@ -12,17 +12,17 @@ const PORT = 8000 // 4 digit npm belakang
 func main(){
 	db.ConnectDB()
 	// Akses halaman home
-	http.HandleFunc("/", handlers.HomeHandler)
+	http.HandleFunc("/", handlers.HomeView)
 	// Akses route untuk menampilkan gambar
-	http.HandleFunc("/image", handlers.ImageHandler)
+	http.HandleFunc("/image", handlers.ImageView)
 	// akses halaman edit
-	http.HandleFunc("/edit", handlers.EditProductHandler)
+	http.HandleFunc("/edit", handlers.EditView)
 	// update data
-	http.HandleFunc("/update", handlers.UpdateProduct)
+	http.HandleFunc("/update", handlers.UpdateProductHandler)
 	// create data
 	http.HandleFunc("/create", handlers.CreateProductHandler)
 	// delete data
-	http.HandleFunc("/delete", handlers.DeleteProduct)
+	http.HandleFunc("/delete", handlers.DeleteProductHandler)
 	
 	fmt.Printf("Server berjalan di http://localhost:%d", PORT)
 	http.ListenAndServe(fmt.Sprintf(":%d", PORT),nil)

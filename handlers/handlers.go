@@ -32,7 +32,7 @@ type EditPageData struct {
 	Error string
 }
 
-func HomeHandler(w http.ResponseWriter, r *http.Request){
+func HomeView(w http.ResponseWriter, r *http.Request){
 	tmpl, _ = template.ParseFiles("templates/index.html")
 	errorMsg := r.URL.Query().Get("error")
 	rows, err := db.DB.Query("SELECT id, name, price, stock, is_active, created_at FROM products")
@@ -77,7 +77,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request){
 	tmpl.Execute(w, data)
 }
 
-func ImageHandler(w http.ResponseWriter, r *http.Request){
+func ImageView(w http.ResponseWriter, r *http.Request){
 	id := r.URL.Query().Get("id")
 
 	var image []byte
@@ -100,10 +100,9 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
 	err := r.ParseMultipartForm(1 << 20)
 	if err != nil {
-		http.Redirect(w, r, "/?error=File is to large. Max 1MB", http.StatusBadRequest)
+		http.Redirect(w, r, "/?error=File is to large. Max 1MB", http.StatusSeeOther)
 		return
 	}
 
@@ -112,7 +111,7 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request){
 	id := r.FormValue("id")
 	name := r.FormValue("name")
 	// Mengecek apakah field price merupakan angka
-	price, err := strconv.ParseInt(r.FormValue("price"), 10, 64)
+	price, err := strconv.ParseFloat(r.FormValue("price"), 10)
 	if err != nil {
 		errMsg := url.QueryEscape("Price must be a number")
 		http.Redirect(w, r, "/?error=" + errMsg, http.StatusSeeOther)
@@ -129,7 +128,7 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request){
 	// Mengecek apakah image ada
 	file, _, err := r.FormFile("image")
 	if err != nil {
-		http.Redirect(w, r, "/?error=Failed read file", http.StatusBadRequest)
+		http.Redirect(w, r, "/?error=Failed read file", http.StatusSeeOther)
 		return
 	}
 	
@@ -138,20 +137,20 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request){
 	// Membaca file gambar, apabila ada error mengembalikan response
 	fileBytes, err := io.ReadAll(file)
 	if err != nil {
-		http.Redirect(w, r, "/?error=Failed read fil", http.StatusInternalServerError)
+		http.Redirect(w, r, "/?error=Failed read file", http.StatusInternalServerError)
 		return
 	}
 
 	// Mengecek apakah ukuran gambar itu lebih kecil dari 1mb
 	if len(fileBytes) > 1<<20 {
-		http.Redirect(w, r, "?error=File size more than 1MB", http.StatusBadRequest)
+		http.Redirect(w, r, "?error=File size more than 1MB", http.StatusSeeOther)
 		return
 	}
 
 	// Mengecek tipe file apakah jpeg atau png, jika bukan akan mengembalikan error
 	fileType := http.DetectContentType(fileBytes)
 	if fileType != "image/jpeg" && fileType != "image/png" {
-		http.Redirect(w, r, "?error=JPEG or PNG type only", http.StatusBadRequest)
+		http.Redirect(w, r, "?error=JPEG or PNG type only", http.StatusSeeOther)
 		return
 	}
 
@@ -168,7 +167,7 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request){
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-func EditProductHandler(w http.ResponseWriter, r *http.Request){
+func EditView(w http.ResponseWriter, r *http.Request){
 	tmpl, _ = template.ParseFiles("templates/edit.html")
 	id := r.URL.Query().Get("id")
 	if id == ""{
@@ -203,7 +202,6 @@ func EditProductHandler(w http.ResponseWriter, r *http.Request){
 			Stock:     product.Stock,
 			IsActive:  product.IsActive,
 			CreatedAt: formattedDate,
-
 		},
 		Error: errorMsg,
 	}
@@ -211,16 +209,15 @@ func EditProductHandler(w http.ResponseWriter, r *http.Request){
 	tmpl.Execute(w, data)
 }
 
-func UpdateProduct(w http.ResponseWriter, r *http.Request){
+func UpdateProductHandler(w http.ResponseWriter, r *http.Request){
 	if r.Method != http.MethodPost {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
 	err := r.ParseMultipartForm(1 << 20)
 	if err != nil {
-		http.Redirect(w, r, "/?error=File is to large. Max 1MB", http.StatusBadRequest)
+		http.Redirect(w, r, "/?error=File is to large. Max 1MB", http.StatusSeeOther)
 		return
 	}
 
@@ -251,20 +248,20 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request){
 		// Membaca file gambar, apabila ada error mengembalikan response
 		fileBytes, err := io.ReadAll(file)
 		if err != nil {
-			http.Redirect(w, r, "/?error=Failed read fil", http.StatusInternalServerError)
+			http.Redirect(w, r, "/?error=Failed read file", http.StatusInternalServerError)
 			return
 		}
 
 		// Mengecek apakah ukuran gambar itu lebih kecil dari 1mb
 		if len(fileBytes) > 1<<20 {
-			http.Redirect(w, r, "?error=File size more than 1MB", http.StatusBadRequest)
+			http.Redirect(w, r, "?error=File size more than 1MB", http.StatusSeeOther)
 			return
 		}
 
 		// Mengecek tipe file apakah jpeg atau png, jika bukan akan mengembalikan error
 		fileType := http.DetectContentType(fileBytes)
 		if fileType != "image/jpeg" && fileType != "image/png" {
-			http.Redirect(w, r, "?error=JPEG or PNG type only", http.StatusBadRequest)
+			http.Redirect(w, r, "?error=JPEG or PNG type only", http.StatusSeeOther)
 			return
 		}
 
@@ -299,7 +296,7 @@ func UpdateProduct(w http.ResponseWriter, r *http.Request){
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-func DeleteProduct(w http.ResponseWriter, r *http.Request){
+func DeleteProductHandler(w http.ResponseWriter, r *http.Request){
 	if r.Method != http.MethodPost {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return

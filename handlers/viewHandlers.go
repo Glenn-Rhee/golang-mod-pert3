@@ -11,13 +11,25 @@ import (
 func HomeView(w http.ResponseWriter, r *http.Request) {
 	tmpl, _ = template.ParseFiles("templates/index.html")
 	errorMsg := r.URL.Query().Get("error")
-	rows, err := db.DB.Query("SELECT id, name, price, stock, is_active, created_at FROM products")
+	rows, err := db.DB.Query(`
+		SELECT 
+			p.id,
+			p.name,
+			p.price,
+			pd.stock,
+			pd.is_active,
+			pd.created_at
+		FROM products p
+		JOIN product_details pd ON p.id = pd.product_id
+	`)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 	defer rows.Close()
+
 	var products []ProductView
+
 	for rows.Next() {
 		var product models.Product
 
@@ -35,6 +47,7 @@ func HomeView(w http.ResponseWriter, r *http.Request) {
 		}
 
 		formattedDate := product.CreatedAt.Format("02 Jan 2006 15:04")
+
 		products = append(products, ProductView{
 			Id:        product.Id,
 			Name:      product.Name,
@@ -44,7 +57,6 @@ func HomeView(w http.ResponseWriter, r *http.Request) {
 			CreatedAt: formattedDate,
 		})
 	}
-
 	data := HomePageData{
 		Products: products,
 		Error:    errorMsg,

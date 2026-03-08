@@ -15,8 +15,8 @@ func ConnectDB(){
 	server := "127.0.0.1:3306"
 	dbName := "tokolepkom_npm"
 	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?parseTime=true",username, password, server, dbName)
-
 	db, err := sql.Open("mysql", dsn)
+	
 	if err != nil {
 		log.Fatal("Failed open DB:", err)
 	}

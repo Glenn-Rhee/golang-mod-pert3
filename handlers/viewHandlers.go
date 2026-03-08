@@ -90,8 +90,21 @@ func EditView(w http.ResponseWriter, r *http.Request) {
 	if id == "" {
 		http.Redirect(w, r, "?error=Id is required!", http.StatusSeeOther)
 	}
-	query := "SELECT id, name, price, stock, is_active, created_at FROM products WHERE id = ?"
+	query := `
+	SELECT 
+		p.id,
+		p.name,
+		p.price,
+		pd.stock,
+		pd.is_active,
+		pd.created_at
+	FROM products p
+	JOIN product_details pd ON p.id = pd.product_id
+	WHERE p.id = ?
+	`
+
 	var product models.Product
+
 	err := db.DB.QueryRow(query, id).Scan(
 		&product.Id,
 		&product.Name,
@@ -100,6 +113,7 @@ func EditView(w http.ResponseWriter, r *http.Request) {
 		&product.IsActive,
 		&product.CreatedAt,
 	)
+
 	var errorMsg string
 
 	if err != nil {

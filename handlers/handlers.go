@@ -68,18 +68,41 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := `
-	INSERT INTO products (id, name, price, stock, is_active, created_at, image)
-	VALUES (?, ?, ?, ?, ?, NOW(), ?)
-	`
-
-	_, err = db.DB.Exec(query, id, name, price, stock, true, imgBytes)
-
+	tx, err := db.DB.Begin()
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
+	queryProduct := `
+		INSERT INTO products (id, name, price)
+		VALUES (?, ?, ?)
+	`
+
+	_, err = tx.Exec(queryProduct, id, name, price)
+	if err != nil {
+		tx.Rollback()
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	
+	queryDetail := `
+		INSERT INTO product_details (product_id, stock, is_active, created_at, image)
+		VALUES (?, ?, ?, NOW(), ?)
+	`
+
+	_, err = tx.Exec(queryDetail, id, stock, true, imgBytes)
+	if err != nil {
+		tx.Rollback()
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 

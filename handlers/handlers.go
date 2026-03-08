@@ -148,28 +148,53 @@ func UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	var query string
-
-	if imgBytes != nil {
-		query = `
-		UPDATE products 
-		SET name=?, price=?, stock=?, is_active=?, image=? 
-		WHERE id=?`
-		_, err = db.DB.Exec(query, name, price, stock, isActive, imgBytes, id)
-
-	} else {
-		query = `
-		UPDATE products 
-		SET name=?, price=?, stock=?, is_active=? 
-		WHERE id=?`
-		_, err = db.DB.Exec(query, name, price, stock, isActive, id)
-	}
-
+	tx, err := db.DB.Begin()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// update tabel products
+	queryProduct := `
+	UPDATE products 
+	SET name=?, price=? 
+	WHERE id=?`
+
+	_, err = tx.Exec(queryProduct, name, price, id)
+	if err != nil {
+		tx.Rollback()
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	
+	if imgBytes != nil {
+		queryDetail := `
+		UPDATE product_details 
+		SET stock=?, is_active=?, image=? 
+		WHERE product_id=?`
+
+		_, err = tx.Exec(queryDetail, stock, isActive, imgBytes, id)
+	} else {
+		queryDetail := `
+		UPDATE product_details 
+		SET stock=?, is_active=? 
+		WHERE product_id=?`
+
+		_, err = tx.Exec(queryDetail, stock, isActive, id)
+	}
+
+	if err != nil {
+	tx.Rollback()
+	http.Error(w, err.Error(), http.StatusInternalServerError)
+	return
+}
+
+	err = tx.Commit()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 

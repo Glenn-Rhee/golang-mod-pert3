@@ -35,7 +35,6 @@ func ReadAndValidateImage(file multipart.File) ([]byte, error) {
 	}
 
 	fileType := http.DetectContentType(fileBytes)
-
 	if fileType != "image/jpeg" && fileType != "image/png" {
 		return nil, fmt.Errorf("JPEG or PNG type only")
 	}

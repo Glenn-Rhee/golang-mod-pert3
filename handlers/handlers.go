@@ -29,7 +29,6 @@ type EditPageData struct {
 }
 
 func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
-
 	if r.Method != http.MethodPost {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
@@ -107,7 +106,6 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
-
 	if r.Method != http.MethodPost {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
@@ -122,7 +120,7 @@ func UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.FormValue("id")
 	name := r.FormValue("name")
 
-	price, err := helper.ParseStock(r)
+	price, err := helper.ParsePrice(r)
 	if err != nil {
 		helper.RedirectError(w, r, "Price must be a number")
 		return
@@ -154,7 +152,6 @@ func UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// update tabel products
 	queryProduct := `
 	UPDATE products 
 	SET name=?, price=? 
@@ -184,10 +181,10 @@ func UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-	tx.Rollback()
-	http.Error(w, err.Error(), http.StatusInternalServerError)
-	return
-}
+		tx.Rollback()
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	err = tx.Commit()
 	if err != nil {

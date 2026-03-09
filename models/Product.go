@@ -2,6 +2,7 @@ package models
 
 import "time"
 
+// Buat Struct Product
 type Product struct {
 	Id        string
 	Name      string

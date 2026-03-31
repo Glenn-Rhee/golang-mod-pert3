@@ -1,8 +1,3 @@
--- Buat Database name 
-CREATE DATABASE TokoLepkom_npm;
-
-USE TokoLepkom_npm;
-
 -- Buat Table Products nya
 CREATE TABLE products (
     id      VARCHAR(100) PRIMARY KEY,

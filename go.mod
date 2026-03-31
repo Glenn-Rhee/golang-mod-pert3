@@ -1,6 +1,6 @@
 module pert3_npm
 
-go 1.24.2
+go 1.23.1
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect

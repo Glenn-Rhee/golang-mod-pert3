@@ -13,12 +13,7 @@ Gunakan perintah berikut untuk melakukan koneksi:
 ```bash
 # Koneksi untuk Kampus F4 :
 mysql -u root -p
-
-# Koneksi untuk Kampus F8 :
-mysql -h dbms.lepkom.f4.com -u APCx -p
 ```
-
-> 📌 _Catatan:_ `APCx` x disesuaikan dengan no PC masing - masing
 
 ---
 
@@ -80,16 +75,6 @@ username := "root"
 password := ""
 server := "127.0.0.1:3306"
 dbName := "tokolepkom_npm"
-dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?parseTime=true",
-    username, password, server, dbName)
-
-
-/* KONEKSI DI BAWAH UNTUK KAMPUS F8 */
-username := "APCx"
-password := "lepkom@123"
-server := "dbms.lepkom.f4.com:3306"
-dbName := "tokolepkom_npm"
-
 dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?parseTime=true",
     username, password, server, dbName)
 ```

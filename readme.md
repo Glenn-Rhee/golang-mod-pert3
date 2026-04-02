@@ -234,7 +234,7 @@ func ReadAndValidateImage(r *http.Request) ([]byte, error) {
 
 ### 11. Testing Aplikasi
 
-- Jalankan server dengan menggunakan perintah `go run main.go`
+- Jalankan server dengan menggunakan perintah `go run -mod=vendor main.go`
 - Akses melalui browser
 - Pastikan semua fitur CRUD berjalan
 

@@ -1,43 +1,24 @@
 package helper
 
 import (
-	"fmt"
-	"io"
 	"mime/multipart"
 	"net/http"
-	"net/url"
-	"strconv"
 )
 
+
+/* TODO - Buat helper untuk redirect error */
 func RedirectError(w http.ResponseWriter, r *http.Request, msg string) {
-	errMsg := url.QueryEscape(msg)
-	http.Redirect(w, r, "/?error="+errMsg, http.StatusSeeOther)
 }
 
+/* TODO - Buat helper untuk Parsing Price */
 func ParsePrice(r *http.Request) (float64, error) {
-	return strconv.ParseFloat(r.FormValue("price"), 64)
 }
 
+/* TODO - Buat helper untuk Parsing Stock */
 func ParseStock(r *http.Request) (int64, error) {
-	return strconv.ParseInt(r.FormValue("stock"), 10, 64)
 }
 
+/* TODO - Buat helper untuk Membaca dan validasi gambar */
 func ReadAndValidateImage(file multipart.File) ([]byte, error) {
-	defer file.Close()
-
-	fileBytes, err := io.ReadAll(file)
-	if err != nil {
-		return nil, fmt.Errorf("failed read file")
-	}
-
-	if len(fileBytes) > 1<<20 {
-		return nil, fmt.Errorf("file size more than 1MB")
-	}
-
-	fileType := http.DetectContentType(fileBytes)
-	if fileType != "image/jpeg" && fileType != "image/png" {
-		return nil, fmt.Errorf("JPEG or PNG type only")
-	}
-
-	return fileBytes, nil
+	
 }
